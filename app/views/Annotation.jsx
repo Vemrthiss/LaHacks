@@ -1,7 +1,7 @@
 import { Button, StyleSheet, Text, TouchableOpacity, View, PanResponder } from 'react-native';
 import { Image } from 'expo-image';
 import Svg, { Rect } from 'react-native-svg';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { throttle } from 'lodash';
 
 const DEFAULT_STATES = {
@@ -11,20 +11,29 @@ const DEFAULT_STATES = {
 }
 
 export default function Annotation({ route }) {
+    const [imageOffsetY, setImageOffsetY] = useState(0);
+
     const [rectangles, setRectangles] = useState(DEFAULT_STATES.rectangles);
+    const [rectanglesPointer, setRectanglesPointer] = useState(1);
+
     const [rectPosition, setRectPosition] = useState(DEFAULT_STATES.rectPosition);
     const [rectDimensions, setRectDimensions] = useState(DEFAULT_STATES.rectDimensions);
 
-    const handlePanResponderEnd = (event, gesture) => {
+    const containerRef = useRef(null);
+
+    const handlePanResponderEnd = useCallback((event, gesture) => {
         const { x0, y0, dx, dy } = gesture;
         const x = dx > 0 ? x0 : x0 + dx;
         const y = dy > 0 ? y0 : y0 + dy;
         const width = Math.abs(dx);
         const height = Math.abs(dy);
-        setRectangles([...rectangles, { x, y, width, height }]);
+        // after adding new rectangle, take current rectangles array up till current pointer, then append new rectangle and set pointer to end
+        const newRectangles = [...rectangles.slice(0, rectanglesPointer), { x, y: y - imageOffsetY, width, height }];
+        setRectangles(newRectangles);
+        setRectanglesPointer(newRectangles.length); // pointer is 1-based since end index for slice does not count
         setRectPosition(DEFAULT_STATES.rectPosition);
         setRectDimensions(DEFAULT_STATES.rectDimensions);
-    };
+    }, [rectangles, rectanglesPointer, imageOffsetY]);
 
     const handlePanResponderStart = (_, gesture) => {
         setRectPosition({ x: gesture.x0, y: gesture.y0 });
@@ -32,7 +41,8 @@ export default function Annotation({ route }) {
 
     const handlePanResponderMove = useCallback((event, gesture) => {
         const { moveX, moveY, dx, dy } = gesture;
-        console.log(gesture)
+        console.log('move', { dx, dy }, gesture);
+        // console.log(gesture)
         // Calculate the new position and dimensions of the rectangle
         const x = Math.min(rectPosition.x, moveX);
         const y = Math.min(rectPosition.y, moveY);
@@ -46,14 +56,28 @@ export default function Annotation({ route }) {
 
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onPanResponderStart: handlePanResponderStart,
-        onPanResponderMove: handlePanResponderMove,
+        // onPanResponderStart: handlePanResponderStart,
+        // onPanResponderMove: handlePanResponderMove,
         onPanResponderRelease: handlePanResponderEnd,
         onPanResponderTerminate: handlePanResponderEnd,
     });
+    
+    const undo = () => {
+        if (rectanglesPointer > 0) setRectanglesPointer(rectanglesPointer - 1);
+    }
+
+    const redo = () => {
+        if (rectanglesPointer < rectangles.length) setRectanglesPointer(rectanglesPointer + 1);
+    }
+
+    const doMeasure = () => {
+        containerRef.current.measure((width, height, px, py, fx, fy) => {
+            setImageOffsetY(fy);
+          })
+    }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} ref={containerRef} onLayout={doMeasure}>
             <Image
                 style={styles.image}
                 source={route.params?.uri}
@@ -69,7 +93,7 @@ export default function Annotation({ route }) {
                     stroke="red"
                     strokeWidth="2"
                 />
-                {rectangles.map(({ x, y, width, height }, index) => (
+                {rectangles.slice(0, rectanglesPointer).map(({ x, y, width, height }, index) => (
                     <Rect
                         key={index}
                         x={x}
@@ -86,6 +110,14 @@ export default function Annotation({ route }) {
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                 {...panResponder.panHandlers}
             />
+            <View style={styles.actionBar}>
+                <TouchableOpacity onPress={undo}>
+                    <Text>Undo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={redo}>
+                    <Text>Redo</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     )
 }
@@ -102,4 +134,14 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: '#0553',
     },
+    actionBar: {
+        display: 'flex',
+        width: '100%',
+        position: 'absolute',
+        bottom: 0,
+        height: 80,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around'
+    }
 });

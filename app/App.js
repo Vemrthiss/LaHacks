@@ -10,7 +10,7 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="home" component={Home} />
-        <Stack.Screen name="annotation" component={Annotation} options={{ headerShown: false }} />
+        <Stack.Screen name="annotation" component={Annotation} />
       </Stack.Navigator>
     </NavigationContainer>
   );

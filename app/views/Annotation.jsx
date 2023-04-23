@@ -1,5 +1,5 @@
 import {
-    Button,
+    // Button,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import Svg, { Rect } from 'react-native-svg';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import cropImage from '../services/cropImage';
+import { Button } from 'react-native-ui-lib';
 
 const DEFAULT_STATES = {
     rectangles: [],
@@ -146,7 +147,7 @@ export default function Annotation({ route }) {
                 <TouchableOpacity onPress={redo}>
                     <Text>Redo</Text>
                 </TouchableOpacity>
-                <Button title="Submit" onPress={submitAnnotations} />
+                <Button label="Submit" onPress={submitAnnotations} bg-secondaryColor />
             </View>
         </View>
     )

@@ -24,7 +24,7 @@ exports.processNewFile = functions.storage
     const detections = result.textAnnotations;
     var arr = [];
     const words = detections[0].description.split("\n");
-    const price = words.pop();
+    const price = parseFloat(words.pop());
     const item = words.join();
 
     if (!getApps().length) {

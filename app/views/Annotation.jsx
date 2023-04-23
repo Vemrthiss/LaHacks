@@ -101,6 +101,11 @@ export default function Annotation({ route, navigation }) {
             }
             cropImage(route.params?.uri, dimensions, { captureWidth: width, captureHeight: height });
         }
+        try {
+            navigation.navigate('expense');
+        } catch (error) {
+            console.log(error)
+        }
     }, [rectangles, rectanglesPointer, width, height])
 
     return (

@@ -1,8 +1,16 @@
-import { Button, StyleSheet, Text, TouchableOpacity, View, PanResponder } from 'react-native';
+import {
+    Button,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    PanResponder,
+    Dimensions
+} from 'react-native';
 import { Image } from 'expo-image';
 import Svg, { Rect } from 'react-native-svg';
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { throttle } from 'lodash';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import cropImage from '../services/cropImage';
 
 const DEFAULT_STATES = {
     rectangles: [],
@@ -12,6 +20,13 @@ const DEFAULT_STATES = {
 
 export default function Annotation({ route }) {
     const [imageOffsetY, setImageOffsetY] = useState(0);
+    const [height, setHeight] = useState('');
+    const [width, setWidth] = useState('');
+
+    useEffect(() => {
+        setHeight(Dimensions.get('window').height - imageOffsetY);
+        setWidth(Dimensions.get('window').width);
+    }, [imageOffsetY]);
 
     const [rectangles, setRectangles] = useState(DEFAULT_STATES.rectangles);
     const [rectanglesPointer, setRectanglesPointer] = useState(1);
@@ -76,12 +91,26 @@ export default function Annotation({ route }) {
           })
     }
 
+    const submitAnnotations = useCallback(() => {
+        const finalRectangles = rectangles.slice(0, rectanglesPointer);
+        for (const rectangle of finalRectangles) {
+            if (rectangle.height === 0 || rectangle.width === 0) continue;
+            const dimensions = {
+                height: rectangle.height,
+                width: rectangle.width,
+                originX: rectangle.x,
+                originY: rectangle.y,
+            }
+            cropImage(route.params?.uri, dimensions, { captureWidth: width, captureHeight: height });
+        }
+    }, [rectangles, rectanglesPointer, width, height])
+
     return (
         <View style={styles.container} ref={containerRef} onLayout={doMeasure}>
             <Image
                 style={styles.image}
                 source={route.params?.uri}
-                contentFit="cover"
+                contentFit="contain"
             />
             <Svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0, backgroundColor: 'transparent' }}>
                 <Rect
@@ -117,6 +146,7 @@ export default function Annotation({ route }) {
                 <TouchableOpacity onPress={redo}>
                     <Text>Redo</Text>
                 </TouchableOpacity>
+                <Button title="Submit" onPress={submitAnnotations} />
             </View>
         </View>
     )

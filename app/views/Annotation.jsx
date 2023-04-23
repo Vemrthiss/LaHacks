@@ -1,7 +1,5 @@
 import {
-    // Button,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
     PanResponder,
@@ -12,6 +10,7 @@ import Svg, { Rect } from 'react-native-svg';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import cropImage from '../services/cropImage';
 import { Button, Colors } from 'react-native-ui-lib';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const DEFAULT_STATES = {
     rectangles: [],
@@ -19,7 +18,7 @@ const DEFAULT_STATES = {
     rectDimensions: { width: 0, height: 0 }
 }
 
-export default function Annotation({ route }) {
+export default function Annotation({ route, navigation }) {
     const [imageOffsetY, setImageOffsetY] = useState(0);
     const [height, setHeight] = useState('');
     const [width, setWidth] = useState('');
@@ -37,6 +36,25 @@ export default function Annotation({ route }) {
 
     const containerRef = useRef(null);
 
+    const [activePanningMode, setActivePanningMode] = useState('draw');
+    const [pan, setPan] = useState(DEFAULT_STATES.rectPosition);
+    const [panResponder, setPanResponder] = useState(null);
+    useEffect(() => {
+        if (activePanningMode === 'draw') {
+            setPanResponder(PanResponder.create({
+                onStartShouldSetPanResponder: () => true,
+                onPanResponderRelease: handlePanResponderEnd,
+                onPanResponderTerminate: handlePanResponderEnd,
+            }))
+        } else if (activePanningMode === 'pan') {
+            setPanResponder(PanResponder.create({
+                onStartShouldSetPanResponder: () => true,
+                onPanResponderMove: (_, gesture) => {
+                    setPan({ x: gesture.dx, y: gesture.dy });
+                }
+            }))
+        }
+    }, [activePanningMode])
     const handlePanResponderEnd = useCallback((event, gesture) => {
         const { x0, y0, dx, dy } = gesture;
         const x = dx > 0 ? x0 : x0 + dx;
@@ -51,32 +69,11 @@ export default function Annotation({ route }) {
         setRectDimensions(DEFAULT_STATES.rectDimensions);
     }, [rectangles, rectanglesPointer, imageOffsetY]);
 
-    const handlePanResponderStart = (_, gesture) => {
-        setRectPosition({ x: gesture.x0, y: gesture.y0 });
-    }
-
-    const handlePanResponderMove = useCallback((event, gesture) => {
-        const { moveX, moveY, dx, dy } = gesture;
-        console.log('move', { dx, dy }, gesture);
-        // console.log(gesture)
-        // Calculate the new position and dimensions of the rectangle
-        const x = Math.min(rectPosition.x, moveX);
-        const y = Math.min(rectPosition.y, moveY);
-        const width = Math.abs(dx);
-        const height = Math.abs(dy);
-
-        // Update the position and dimensions of the rectangle
-        setRectPosition({ x, y });
-        setRectDimensions({ width, height });
-    }, [rectPosition])
-
-    const panResponder = PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        // onPanResponderStart: handlePanResponderStart,
-        // onPanResponderMove: handlePanResponderMove,
-        onPanResponderRelease: handlePanResponderEnd,
-        onPanResponderTerminate: handlePanResponderEnd,
-    });
+    // const panResponder = PanResponder.create({
+    //     onStartShouldSetPanResponder: () => true,
+    //     onPanResponderRelease: handlePanResponderEnd,
+    //     onPanResponderTerminate: handlePanResponderEnd,
+    // });
     
     const undo = () => {
         if (rectanglesPointer > 0) setRectanglesPointer(rectanglesPointer - 1);
@@ -108,8 +105,49 @@ export default function Annotation({ route }) {
 
     return (
         <View style={styles.container} ref={containerRef} onLayout={doMeasure}>
+            <View
+                style={
+                    [
+                        styles.actionBar,
+                        { top: 0, backgroundColor: Colors.primaryColor, zIndex: 100, paddingTop: 30 }
+                    ]
+                }
+            >
+                <Button
+                    label="< Back"
+                    backgroundColor={Colors.secondaryColor}
+                    size={Button.sizes.medium}
+                    onPress={() => navigation.goBack()}
+                />
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity
+                        style={{ marginRight: 10 }}
+                        onPress={() => setActivePanningMode('draw')}
+                    >
+                        <MaterialIcons
+                            name="crop"
+                            size={24}
+                            color={activePanningMode === 'draw' ? "red" : "white"}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        // onPress={() => setActivePanningMode('pan')}
+                    >
+                        <MaterialCommunityIcons 
+                            name="hand-back-right-outline"
+                            size={24}
+                            color={activePanningMode === 'pan' ? "red" : "white"}
+                        />
+                    </TouchableOpacity>
+                </View>
+            </View>
             <Image
-                style={styles.image}
+                style={
+                    [
+                        styles.image,
+                        { transform: [{ translateX: pan.x }, { translateY: pan.y }] }
+                    ]
+                }
                 source={route.params?.uri}
                 contentFit="contain"
             />
@@ -138,16 +176,23 @@ export default function Annotation({ route }) {
             </Svg>
             <View
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                {...panResponder.panHandlers}
+                {...panResponder?.panHandlers}
             />
-            <View style={styles.actionBar}>
-                <TouchableOpacity onPress={undo}>
-                    <Text>Undo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={redo}>
-                    <Text>Redo</Text>
-                </TouchableOpacity>
-                <Button label="Submit" onPress={submitAnnotations} backgroundColor={Colors.secondaryColor} />
+            <View style={[styles.actionBar, { backgroundColor: Colors.primaryColor, bottom: 0 }]}>
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity onPress={undo} style={{ marginRight: 10 }}>
+                        <MaterialIcons name="undo" size={24} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={redo}>
+                        <MaterialIcons name="redo" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+                <Button
+                    label="Next Step >"
+                    onPress={submitAnnotations}
+                    backgroundColor={Colors.secondaryColor}
+                    size={Button.sizes.medium}
+                />
             </View>
         </View>
     )
@@ -169,10 +214,10 @@ const styles = StyleSheet.create({
         display: 'flex',
         width: '100%',
         position: 'absolute',
-        bottom: 0,
         height: 80,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-around'
+        justifyContent: 'space-between',
+        paddingHorizontal: 20
     }
 });

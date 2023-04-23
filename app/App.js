@@ -15,7 +15,7 @@ if(typeof atob === 'undefined') {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="home" component={Home} />
         <Stack.Screen name="annotation" component={Annotation} />
       </Stack.Navigator>

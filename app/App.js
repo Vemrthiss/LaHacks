@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './views/Home';
 import Annotation from './views/Annotation';
 import { decode } from 'base-64';
+import './componentsConfig';
+import './designConfig';
 
 const Stack = createNativeStackNavigator();
 

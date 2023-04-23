@@ -1,9 +1,9 @@
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Cam({ callback }) {
-    const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
     const cameraRef = useRef(null);
 
@@ -21,10 +21,6 @@ export default function Cam({ callback }) {
             </View>
         );
     }
-
-    const toggleCameraType = () => {
-        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
-    }
     
     const takePicture = async () => {
         if (!cameraRef.current) return;
@@ -33,13 +29,13 @@ export default function Cam({ callback }) {
     }
     
     return (
-        <Camera style={styles.camera} type={type} ref={cameraRef}>
+        <Camera style={styles.camera} type={CameraType.back} ref={cameraRef}>
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-                    <Text style={styles.text}>Flip Camera</Text>
-                </TouchableOpacity>
                 <TouchableOpacity onPress={takePicture} style={styles.button}>
-                    <Text style={styles.text}>Take Picture</Text>
+                    <View style={{ position: 'relative' }}>
+                        <Ionicons name="ios-ellipse-outline" size={84} color="white"/>
+                        <Ionicons name="ios-ellipse" size={58} color="white" style={{ position: 'absolute', top: 14, left: 12 }}/>
+                    </View>
                 </TouchableOpacity>
             </View>
         </Camera>

@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs, onSnapshot } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
 
 /**
@@ -16,6 +16,9 @@ export const createItemDocument = async (reference) => {
   }
 };
 
+/**
+ * A one-off req
+ */
 export const getAllDocuments = async () => {
   const arr = [];
   try {
@@ -26,6 +29,13 @@ export const getAllDocuments = async () => {
   } catch (e) {
     console.error(e);
   }
-  console.log(arr[0])
   return arr;
 };
+
+/**
+ * 
+ * @returns an unsubscribe function
+ */
+export const listenToCollection = (cb) => {
+  return onSnapshot(collection(firestore, "items"), cb, (error) => console.error(error));
+}

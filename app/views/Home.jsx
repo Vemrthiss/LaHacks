@@ -43,14 +43,14 @@ export default function Home({ navigation }) {
                 showCamera ?
                 <Camera callback={(uri) => navigation.navigate('annotation', { uri })}/> :
                 <View style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                    <Text style={{ textAlign: 'center' }}>How would you like to record the transaction?</Text>
-                    <Button style={{ alignSelf: 'center' }} bg-secondaryColor label="Add new expense" onPress={() => setShowCamera(true)}/>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, width: 300, alignSelf: 'center' }}>
+                    <Text style={{ textAlign: 'center', marginBottom: 50, fontSize: 18 }}>How would you like to record the transaction?</Text>
+                    <Button style={{ alignSelf: 'center', width: 300, backgroundColor: '#28502E' }} label="Capture the receipt" onPress={() => setShowCamera(true)}/>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, width: 200, alignSelf: 'center' }}>
                         <View style={{ flex: 1, height: 1, backgroundColor: '#ccc', marginRight: 10 }} />
                         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>OR</Text>
                         <View style={{ flex: 1, height: 1, backgroundColor: '#ccc', marginLeft: 10 }} />
                     </View>
-                    <Button style={{ alignSelf: 'center'}} label="Manually input" disabled/>
+                    <Button style={{ alignSelf: 'center', width: 300 }} label="Manually input" disabled/>
                 </View>
             }
             {

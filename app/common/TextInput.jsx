@@ -4,12 +4,13 @@ export default function TextInput({
     value,
     setValue,
     placeholder,
-    otherStyles
+    otherStyles,
+    withFloatingPlacholder
 }) {
     return (
         <TextField
             placeholder={placeholder ? placeholder : 'Placeholder'}
-            floatingPlaceholder
+            floatingPlaceholder={withFloatingPlacholder}
             onChangeText={setValue}
             value={value}
             floatingPlaceholderColor="black"

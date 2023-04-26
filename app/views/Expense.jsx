@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { getAllDocuments, listenToCollection } from "../services/itemsRepository";
 import ItemCard from "../components/ItemCard/ItemCard";
@@ -14,10 +14,10 @@ const Expense = () => {
   const [index, setIndex] = useState(0);
   const collectionChangeCb = (data) => {
     const newDocs = data.docs.map(doc => doc.data());
-    setDocument(newDocs);
+    setDocument(newDocs.filter(doc => !!doc.name));
   }
   useEffect(() => {
-    getAllDocuments().then((res) => setDocument(res));
+    getAllDocuments().then((res) => setDocument(res.filter(doc => !!doc.name)));
     getAllUsers().then(res => setUsers(res));
 
     const unsubscribe = listenToCollection(collectionChangeCb);
@@ -63,7 +63,7 @@ const Expense = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <ItemCard item={document[index]} users={users} />
+      <ItemCard item={document[index]} users={users} document={document} index={index} />
       {
         index === document.length - 1 &&
         <View style={styles.actionBar}>

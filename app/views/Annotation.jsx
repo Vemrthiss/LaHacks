@@ -38,23 +38,23 @@ export default function Annotation({ route, navigation }) {
 
     const [activePanningMode, setActivePanningMode] = useState('draw');
     const [pan, setPan] = useState(DEFAULT_STATES.rectPosition);
-    const [panResponder, setPanResponder] = useState(null);
-    useEffect(() => {
-        if (activePanningMode === 'draw') {
-            setPanResponder(PanResponder.create({
-                onStartShouldSetPanResponder: () => true,
-                onPanResponderRelease: handlePanResponderEnd,
-                onPanResponderTerminate: handlePanResponderEnd,
-            }))
-        } else if (activePanningMode === 'pan') {
-            setPanResponder(PanResponder.create({
-                onStartShouldSetPanResponder: () => true,
-                onPanResponderMove: (_, gesture) => {
-                    setPan({ x: gesture.dx, y: gesture.dy });
-                }
-            }))
-        }
-    }, [activePanningMode])
+    // const [panResponder, setPanResponder] = useState(null);
+    // useEffect(() => {
+    //     if (activePanningMode === 'draw') {
+    //         setPanResponder(PanResponder.create({
+    //             onStartShouldSetPanResponder: () => true,
+    //             onPanResponderRelease: handlePanResponderEnd,
+    //             onPanResponderTerminate: handlePanResponderEnd,
+    //         }))
+    //     } else if (activePanningMode === 'pan') {
+    //         setPanResponder(PanResponder.create({
+    //             onStartShouldSetPanResponder: () => true,
+    //             onPanResponderMove: (_, gesture) => {
+    //                 setPan({ x: gesture.dx, y: gesture.dy });
+    //             }
+    //         }))
+    //     }
+    // }, [activePanningMode])
     const handlePanResponderEnd = useCallback((event, gesture) => {
         const { x0, y0, dx, dy } = gesture;
         const x = dx > 0 ? x0 : x0 + dx;
@@ -69,11 +69,11 @@ export default function Annotation({ route, navigation }) {
         setRectDimensions(DEFAULT_STATES.rectDimensions);
     }, [rectangles, rectanglesPointer, imageOffsetY]);
 
-    // const panResponder = PanResponder.create({
-    //     onStartShouldSetPanResponder: () => true,
-    //     onPanResponderRelease: handlePanResponderEnd,
-    //     onPanResponderTerminate: handlePanResponderEnd,
-    // });
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderRelease: handlePanResponderEnd,
+        onPanResponderTerminate: handlePanResponderEnd,
+    });
     
     const undo = () => {
         if (rectanglesPointer > 0) setRectanglesPointer(rectanglesPointer - 1);

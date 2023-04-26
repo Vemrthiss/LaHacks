@@ -3,16 +3,21 @@ import Dropdown from "../Dropdown";
 import { Card } from "react-native-ui-lib";
 import TextInput from '../../common/TextInput';
 import NumberInput from '../../common/NumberInput';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PersonShare from "./PersonShare";
 
-const ItemCard = ({ item, users }) => {
+const ItemCard = (props) => {
   // each card has its local state to allow editing
   // abit whack won't push changes to firestore just yet
-  const [itemName, setItemName] = useState(item?.name);
-  const [price, setPrice] = useState(item?.price);
+  // const [itemName, setItemName] = useState(item?.name);
+  // const [price, setPrice] = useState(item?.price);
+  const [itemName, setItemName] = useState(props.document[props.index]?.name);
+  const [price, setPrice] = useState(props.document[props.index]?.price);
 
-  console.log({item})
+  // console.log({item})
+  // useEffect(() => {
+  //   console.log({ itemName, price })
+  // }, [itemName, price, index])
 
   return (
     // <View style={styles.text}>
@@ -30,23 +35,25 @@ const ItemCard = ({ item, users }) => {
     <Card flex center enableShadow style={{ margin: 20, borderColor: '#648845', borderWidth: 1, padding: 20 }}>
       <TextInput
         placeholder="Name of item"
-        value={itemName}
-        setValue={setItemName}
+        value={props.document[props.index]?.name}
+        setValue={() => {}}
         otherStyles={{
-          width: 200,
+          width: 300,
+          marginBottom: 15
         }}
       />
-      {/* <NumberInput
+      <TextInput
         placeholder="Price"
-        value={price}
-        setValue={setPrice}
+        value={`${props.document[props.index]?.price}`}
+        setValue={() => {}}
         otherStyles={{
-          width: 200,
+          width: 300,
+          marginBottom: 15
         }}
-      /> */}
+      />
       <Dropdown />
       {
-        users.map((user, i) => (
+        props.users.map((user, i) => (
           <PersonShare
             name={user.name}
             initials={user.initials}

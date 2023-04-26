@@ -16,7 +16,7 @@ export default function Dropdown() {
       setSelected={(val) => setSelected(val)}
       data={data}
       save="value"
-      boxStyles={{ width: 250 }}
+      boxStyles={{ width: 300, marginBottom: 15 }}
     />
   );
 }

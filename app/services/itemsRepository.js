@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, onSnapshot } from "firebase/firestore";
+import { addDoc, collection, getDocs, onSnapshot, doc } from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
 
 /**
@@ -38,4 +38,8 @@ export const getAllDocuments = async () => {
  */
 export const listenToCollection = (cb) => {
   return onSnapshot(collection(firestore, "items"), cb, (error) => console.error(error));
+}
+
+export const listenToDocument = (id, cb) => {
+  return onSnapshot(doc(firestore, 'items', id), cb, (error) => console.error(error));
 }
